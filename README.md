@@ -1,12 +1,7 @@
-# Logly Life
+# Tauri + React + Typescript
 
-個人の活動ログをローカル環境で記録・分析できるデスクトップアプリ。
+This template should help get you started developing with Tauri, React and Typescript in Vite.
 
-## 技術構成
-- Tauri
-- React + TypeScript + Vite
-- SQLite + Drizzle ORM
-- Rust
+## Recommended IDE Setup
 
-## 開発状況
-v0.1 開発中
+- [VS Code](https://code.visualstudio.com/) + [Tauri](https://marketplace.visualstudio.com/items?itemName=tauri-apps.tauri-vscode) + [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer)
