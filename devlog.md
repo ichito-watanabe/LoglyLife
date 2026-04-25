@@ -351,8 +351,72 @@ initDb().then(() => {
 ---
 
 ### 次のステップ
-- [ ] 最小のデータ登録（INSERT）を試す
-- [ ] 最小のデータ取得（SELECT）を試す
+- [x] 最小のデータ登録（INSERT）を試す
+- [x] 最小のデータ取得（SELECT）を試す
 - [ ] UI からログを登録できるようにする
+
+---
+
+## #3 INSERT / SELECT の動作確認
+**日付:** 2026-04-26
+
+### やったこと
+テスト用の `App.tsx` を作り、DB への INSERT と SELECT が実際に動くか確認した。
+
+### トラブル①：真っ白な画面
+
+`npm run tauri dev` でアプリを起動したら画面が真っ白になった。
+
+**原因:** `capabilities/default.json` の `"sql:default"` に `execute` の権限が含まれていなかった。
+
+**解決:** 個別の権限を明示的に指定する。
+
+```json
+// 変更前
+"sql:default"
+
+// 変更後
+"sql:allow-load",
+"sql:allow-execute",
+"sql:allow-select"
+```
+
+Tauri 2 は許可リストにない操作をフロントから呼ぶとエラーになる。`sql:default` は期待した権限をすべて含んでいなかったため、必要な操作を1つずつ明示した。
+
+---
+
+### トラブル②：タイムスタンプが文字列になる
+
+INSERT 後に SELECT すると `createdAt` が `"CURRENT_TIMESTAMP"` という文字列になっていた。
+
+**原因:** `.default("CURRENT_TIMESTAMP")` と書くと Drizzle が文字列としてそのまま INSERT してしまう。
+
+**解決:** `sql` テンプレートを使って SQL 式として評価させる。
+
+```typescript
+// 変更前
+import { sqliteTable, integer, text } from "drizzle-orm/sqlite-core";
+createdAt: text("created_at").notNull().default("CURRENT_TIMESTAMP"),
+
+// 変更後
+import { sqliteTable, integer, text } from "drizzle-orm/sqlite-core";
+import { sql } from "drizzle-orm";
+createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+```
+
+`sql\`...\`` は drizzle-orm の関数で、バッククォートで囲んだ内容を文字列ではなく SQL 式として扱う。タイムスタンプは JavaScript の `new Date()` ではなく SQLite の `CURRENT_TIMESTAMP` 関数が評価する。ネット環境なしで動作し、PC のシステムクロックから時刻を取得する。
+
+---
+
+### 動作確認結果
+
+- `categories` テーブルへの INSERT・SELECT が正常に動作することを確認
+- タイムスタンプに実際の日時が記録されることを確認
+
+---
+
+### 次のステップ
+- [ ] UI からログを登録できるようにする（`activityLogs` への INSERT フォームを作る）
+- [ ] ログ一覧を画面に表示する
 
 ---
