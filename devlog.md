@@ -176,3 +176,183 @@ DBにデータを保存・取得できるようにする。
 - **Drizzle ORM** … TypeScript から SQLite を操作するためのライブラリ。SQLを直接書かずに型安全にDBを扱える
 
 ---
+
+### Step 1: npm パッケージのインストール
+
+```powershell
+npm install drizzle-orm @tauri-apps/plugin-sql
+npm install -D drizzle-kit
+```
+
+- `drizzle-orm` … TypeScript から型安全に SQL を書けるライブラリ
+- `@tauri-apps/plugin-sql` … Tauri から SQLite を操作する公式プラグインの JS 側
+- `drizzle-kit` … スキーマ管理ツール（開発用、`-D` は devDependencies に追加する意味）
+
+---
+
+### Step 2: Rust 側に tauri-plugin-sql を追加
+
+**変更ファイル:** `src-tauri/Cargo.toml`
+
+```toml
+[dependencies]
+tauri = { version = "2", features = [] }
+tauri-plugin-opener = "2"
+tauri-plugin-sql = { version = "2", features = ["sqlite"] }  # 追加
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+```
+
+`features = ["sqlite"]` で SQLite を使うことを Rust 側に宣言する。
+
+---
+
+### Step 3: フロントエンドに SQL 権限を許可
+
+**変更ファイル:** `src-tauri/capabilities/default.json`
+
+```json
+{
+  "permissions": [
+    "core:default",
+    "opener:default",
+    "sql:default"   // 追加
+  ]
+}
+```
+
+Tauri 2 はセキュリティのため、許可リストにない API はフロントエンドから呼べない。`sql:default` で SQLite の読み書き権限を許可する。
+
+---
+
+### Step 4: Rust にプラグインを登録
+
+**変更ファイル:** `src-tauri/src/lib.rs`
+
+```rust
+pub fn run() {
+    tauri::Builder::default()
+        .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_sql::Builder::default().build())  // 追加
+        .invoke_handler(tauri::generate_handler![greet])
+        .run(tauri::generate_context!())
+        .expect("error while running tauri application");
+}
+```
+
+`Cargo.toml` に追加しただけでは使えない。`.plugin(...)` で起動時に読み込むよう登録する必要がある。Node.js の `app.use(...)` に相当する。
+
+---
+
+### Step 5: DBスキーマ定義
+
+**新規作成:** `src/db/schema.ts`
+
+テーブルの設計図を TypeScript で定義する。実際に DB にテーブルを作るわけではなく、Drizzle ORM が型を自動生成するための情報を渡す。
+
+```typescript
+import { sqliteTable, integer, text } from "drizzle-orm/sqlite-core";
+import { sql } from "drizzle-orm";
+
+
+export const categories = sqliteTable("categories", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  name: text("name").notNull(),
+  parentId: integer("parent_id"),
+  color: text("color"),
+  sortOrder: integer("sort_order").notNull().default(0),
+  createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: text("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+});
+
+export const activityLogs = sqliteTable("activity_logs", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  date: text("date").notNull(),
+  categoryId: integer("category_id").notNull().references(() => categories.id),
+  title: text("title").notNull(),
+  durationMinutes: integer("duration_minutes"),
+  memo: text("memo"),
+  createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: text("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+});
+```
+
+**なぜ TypeScript で設計図を書くのか？**
+SQL を直接書いてデータを取得すると、返ってくる型が `any` になる。Drizzle に設計図を渡しておくことで、`activityLogs.title` は `string`、`activityLogs.durationMinutes` は `number | null` と自動で型がつき、ミスをコンパイル時に発見できる。
+
+---
+
+### Step 6: DB接続ファイル作成
+
+**新規作成:** `src/db/index.ts`
+
+DB への接続と、テーブルの初期化（なければ作成）を行う。`schema.ts` は設計図だけで、実際に DB ファイルを作ったりテーブルを作ったりはしない。このファイルが実際の処理を担う。
+
+```typescript
+import Database from "@tauri-apps/plugin-sql";
+import { drizzle } from "drizzle-orm/sqlite-proxy";
+import * as schema from "./schema";
+
+type Db = ReturnType<typeof drizzle<typeof schema>>;
+let _db: Db | null = null;
+
+export async function initDb(): Promise<Db> {
+  const sqlite = await Database.load("sqlite:loglylife.db");
+
+  // テーブルが存在しなければ作成（2回目以降はスキップ）
+  await sqlite.execute(`CREATE TABLE IF NOT EXISTS categories (...)`, []);
+  await sqlite.execute(`CREATE TABLE IF NOT EXISTS activity_logs (...)`, []);
+
+  // Tauri の SQL プラグインを Drizzle のドライバーとして橋渡しする
+  _db = drizzle(async (sql, params, method) => {
+    if (method === "run") {
+      await sqlite.execute(sql, params as unknown[]);
+      return { rows: [] };
+    }
+    const rows = await sqlite.select<Record<string, unknown>[]>(sql, params as unknown[]);
+    return { rows: rows.map((row) => Object.values(row)) };
+  }, { schema });
+
+  return _db;
+}
+
+export function getDb(): Db {
+  if (!_db) throw new Error("DB not initialized. Call initDb() first.");
+  return _db;
+}
+```
+
+**`sqlite-proxy` を使う理由:**
+Drizzle ORM は通常 Node.js 環境向けに作られており、Tauri の SQLite プラグインに直接対応していない。`sqlite-proxy` はカスタムドライバーを差し込める仕組みで、Tauri の API を Drizzle が理解できる形に変換している。
+
+---
+
+### Step 7: アプリ起動時にDBを初期化
+
+**変更ファイル:** `src/main.tsx`
+
+```typescript
+import React from "react";
+import ReactDOM from "react-dom/client";
+import App from "./App";
+import { initDb } from "./db";
+
+initDb().then(() => {
+  ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
+    <React.StrictMode>
+      <App />
+    </React.StrictMode>
+  );
+});
+```
+
+`initDb()` は非同期処理なので、DB の準備が終わる前に React が起動するとデータ操作で失敗する。`.then()` で「DB の準備ができてから React を起動する」順番を保証している。
+
+---
+
+### 次のステップ
+- [ ] 最小のデータ登録（INSERT）を試す
+- [ ] 最小のデータ取得（SELECT）を試す
+- [ ] UI からログを登録できるようにする
+
+---

@@ -1,49 +1,26 @@
-import { useState } from "react";
-import reactLogo from "./assets/react.svg";
-import { invoke } from "@tauri-apps/api/core";
-import "./App.css";
+import {useState } from"react";
+import { getDb } from "./db";
+import { categories } from "./db/schema";
 
 function App() {
-  const [greetMsg, setGreetMsg] = useState("");
-  const [name, setName] = useState("");
-
-  async function greet() {
-    // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-    setGreetMsg(await invoke("greet", { name }));
+  const [result, setResult] = useState<string>("");
+  async function testInsert() {
+    const db = getDb();
+    await db.insert(categories).values({name:"学習"});
+    setResult("INSERT 成功！");
   }
 
-  return (
-    <main className="container">
-      <h1>Welcome to Tauri + React</h1>
-
-      <div className="row">
-        <a href="https://vite.dev" target="_blank">
-          <img src="/vite.svg" className="logo vite" alt="Vite logo" />
-        </a>
-        <a href="https://tauri.app" target="_blank">
-          <img src="/tauri.svg" className="logo tauri" alt="Tauri logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <p>Click on the Tauri, Vite, and React logos to learn more.</p>
-
-      <form
-        className="row"
-        onSubmit={(e) => {
-          e.preventDefault();
-          greet();
-        }}
-      >
-        <input
-          id="greet-input"
-          onChange={(e) => setName(e.currentTarget.value)}
-          placeholder="Enter a name..."
-        />
-        <button type="submit">Greet</button>
-      </form>
-      <p>{greetMsg}</p>
+  async function testSelect() {
+    const db = getDb();
+    const rows = await db.select().from(categories);
+    setResult(JSON.stringify(rows,null,2));
+  }
+  return(
+    <main>
+      <h1>DBテスト</h1>
+      <button onClick={testInsert}>INSERT テスト</button>
+      <button onClick={testSelect}>SELECT テスト</button>
+      <pre>{result}</pre>
     </main>
   );
 }
