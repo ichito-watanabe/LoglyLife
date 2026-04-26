@@ -1,27 +1,40 @@
-import {useState } from"react";
-import { getDb } from "./db";
-import { categories } from "./db/schema";
+import { useState } from "react";
+import { CategoryForm } from "./components/CategoryForm";
+import { LogForm } from "./components/LogForm";
+import { LogList } from "./components/LogList";
+
+type Page = "log" | "category";
 
 function App() {
-  const [result, setResult] = useState<string>("");
-  async function testInsert() {
-    const db = getDb();
-    await db.insert(categories).values({name:"学習"});
-    setResult("INSERT 成功！");
-  }
+  const [page, setPage] = useState<Page>("log");
+  const [refreshKey, setRefreshKey] = useState(0);
+  const [categoryRefreshKey, setCategoryRefreshKey] = useState(0);
 
-  async function testSelect() {
-    const db = getDb();
-    const rows = await db.select().from(categories);
-    setResult(JSON.stringify(rows,null,2));
-  }
-  return(
-    <main>
-      <h1>DBテスト</h1>
-      <button onClick={testInsert}>INSERT テスト</button>
-      <button onClick={testSelect}>SELECT テスト</button>
-      <pre>{result}</pre>
-    </main>
+  return (
+    <>
+      <nav style={{ display: "flex", gap: "8px", padding: "8px", borderBottom: "1px solid #ccc" }}>
+        <button onClick={() => setPage("log")} style={{ fontWeight: page === "log" ? "bold" : "normal" }}>
+          ログ記録
+        </button>
+        <button onClick={() => setPage("category")} style={{ fontWeight: page === "category" ? "bold" : "normal" }}>
+          カテゴリ管理
+        </button>
+      </nav>
+
+      {page === "log" && (
+        <>
+          <LogForm
+            onAdded={() => setRefreshKey((k) => k + 1)}
+            categoryRefreshKey={categoryRefreshKey}
+          />
+          <LogList refreshKey={refreshKey} />
+        </>
+      )}
+
+      {page === "category" && (
+        <CategoryForm onAdded={() => setCategoryRefreshKey((k) => k + 1)} />
+      )}
+    </>
   );
 }
 
