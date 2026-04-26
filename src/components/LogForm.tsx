@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { getDb } from "../db";
-import { categories, activityLogs, activityLogCategories } from "../db/schema";
+import { getDb, insertActivityLog } from "../db";
+import { categories, activityLogCategories } from "../db/schema";
 import { Category, buildPath, getAncestorIds } from "../db/categoryUtils";
 import { CategoryTree } from "./CategoryTree";
 
@@ -38,13 +38,12 @@ export function LogForm({ onAdded, categoryRefreshKey }: { onAdded: () => void; 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (selectedCategoryIds.size === 0) return;
-
     const db = getDb();
-    const [log] = await db.insert(activityLogs).values({
+    const logId = await insertActivityLog({
       date,
       durationMinutes: duration ? Number(duration) : null,
       memo: memo || null,
-    }).returning({ id: activityLogs.id });
+    });
 
     const allCategoryIds = new Set<number>();
     for (const catId of selectedCategoryIds) {
@@ -52,9 +51,8 @@ export function LogForm({ onAdded, categoryRefreshKey }: { onAdded: () => void; 
         allCategoryIds.add(id);
       }
     }
-
     for (const catId of allCategoryIds) {
-      await db.insert(activityLogCategories).values({ logId: log.id, categoryId: catId });
+      await db.insert(activityLogCategories).values({ logId, categoryId: catId });
     }
 
     setMessage("登録しました！");
@@ -81,17 +79,9 @@ export function LogForm({ onAdded, categoryRefreshKey }: { onAdded: () => void; 
           {selectedCategoryIds.size > 0 && (
             <div style={{ display: "flex", flexWrap: "wrap", gap: "4px", marginTop: "6px" }}>
               {[...selectedCategoryIds].map((id) => (
-                <span
-                  key={id}
-                  style={{ background: "#dbeafe", borderRadius: "4px", padding: "2px 8px", fontSize: "0.85em" }}
-                >
+                <span key={id} style={{ background: "#dbeafe", borderRadius: "4px", padding: "2px 8px", fontSize: "0.85em" }}>
                   {buildPath(categoryList, id)}
-                  <span
-                    onClick={() => removeCategory(id)}
-                    style={{ cursor: "pointer", marginLeft: "6px", color: "#999" }}
-                  >
-                    ×
-                  </span>
+                  <span onClick={() => removeCategory(id)} style={{ cursor: "pointer", marginLeft: "6px", color: "#999" }}>×</span>
                 </span>
               ))}
             </div>

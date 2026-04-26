@@ -4,9 +4,11 @@ import * as schema from "./schema";
 
 type Db = ReturnType<typeof drizzle<typeof schema>>;
 let _db: Db | null = null;
+let _sqlite: Database | null = null;
 
 export async function initDb(): Promise<Db> {
-  const sqlite = await Database.load("sqlite:loglylife.db");
+  _sqlite = await Database.load("sqlite:loglylife.db");
+  const sqlite = _sqlite;
 
   await sqlite.execute(
     `CREATE TABLE IF NOT EXISTS categories (
@@ -71,4 +73,21 @@ export async function initDb(): Promise<Db> {
 export function getDb(): Db {
   if (!_db) throw new Error("DB not initialized. Call initDb() first.");
   return _db;
+}
+
+export async function insertActivityLog(params: {
+  date: string;
+  durationMinutes: number | null;
+  memo: string | null;
+}): Promise<number> {
+  if (!_sqlite) throw new Error("DB not initialized. Call initDb() first.");
+  await _sqlite.execute(
+    "INSERT INTO activity_logs (date, duration_minutes, memo) VALUES (?, ?, ?)",
+    [params.date, params.durationMinutes, params.memo]
+  );
+  const rows = await _sqlite.select<{ id: number }[]>(
+    "SELECT MAX(id) as id FROM activity_logs",
+    []
+  );
+  return rows[0].id;
 }
