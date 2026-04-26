@@ -72,11 +72,10 @@ cargo --version  # → cargo 1.95.0
 - `rustc` … Rust のコンパイラ。`.rs` ファイルを実行ファイルに変換する
 - `cargo` … Rust のパッケージマネージャー兼ビルドツール。npm に相当する
 
-**PATHの問題**
-インストール後、ターミナルを再起動しても `rustc` が認識されない問題が発生。
-Rust は `C:\Users\ichito0229\.cargo\bin` にインストールされるが、PATHに追加されていなかった。
+**PATHの設定**
+インストール後、ターミナルを再起動しても `rustc` が認識されない場合がある。
+Rust は `C:\Users\ichito0229\.cargo\bin` にインストールされるため、以下で永続的にPATHを設定する：
 
-以下で永続的にPATHを設定して解決：
 ```powershell
 [System.Environment]::SetEnvironmentVariable(
   "PATH",
@@ -144,24 +143,14 @@ LoglyLife/
 
 ---
 
-### Step 5: 依存関係のインストール
+### Step 5: 依存関係のインストール & 動作確認
 
 ```powershell
-npm install
+npm install        # package.json に書かれたライブラリを node_modules/ にダウンロード
+npm run tauri dev  # アプリを開発モードで起動（初回はRustのコンパイルで数分かかる）
 ```
 
-**このコマンドで何が起きるか？**
-`package.json` に書かれたライブラリを `node_modules/` にダウンロードする。
-初回は時間がかかるが、2回目以降はキャッシュが効く。
-
-結果: 73 packages added, 0 vulnerabilities
-
----
-
-### 次のステップ
-- [x] `npm run tauri dev` でアプリを起動して動作確認
-- [ ] SQLite + Drizzle ORM の導入
-- [ ] DBテーブルの作成
+アプリウィンドウが開けば環境構築完了。
 
 ---
 
@@ -213,15 +202,25 @@ serde_json = "1"
 
 ```json
 {
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "Capability for the main window",
+  "windows": ["main"],
   "permissions": [
     "core:default",
     "opener:default",
-    "sql:default"   // 追加
+    "sql:allow-load",
+    "sql:allow-execute",
+    "sql:allow-select"
   ]
 }
 ```
 
-Tauri 2 はセキュリティのため、許可リストにない API はフロントエンドから呼べない。`sql:default` で SQLite の読み書き権限を許可する。
+Tauri 2 はセキュリティのため、許可リストにない API はフロントエンドから呼べない。
+操作ごとに個別の権限を明示的に指定する：
+- `sql:allow-load` … DBファイルを開く権限
+- `sql:allow-execute` … INSERT・UPDATE・DELETE を実行する権限
+- `sql:allow-select` … SELECT を実行する権限
 
 ---
 
@@ -254,7 +253,6 @@ pub fn run() {
 import { sqliteTable, integer, text } from "drizzle-orm/sqlite-core";
 import { sql } from "drizzle-orm";
 
-
 export const categories = sqliteTable("categories", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   name: text("name").notNull(),
@@ -280,6 +278,11 @@ export const activityLogs = sqliteTable("activity_logs", {
 **なぜ TypeScript で設計図を書くのか？**
 SQL を直接書いてデータを取得すると、返ってくる型が `any` になる。Drizzle に設計図を渡しておくことで、`activityLogs.title` は `string`、`activityLogs.durationMinutes` は `number | null` と自動で型がつき、ミスをコンパイル時に発見できる。
 
+**`sql\`CURRENT_TIMESTAMP\`` を使う理由:**
+`.default("CURRENT_TIMESTAMP")` と書くと文字列としてそのまま INSERT されてしまう。
+`sql\`...\`` は drizzle-orm の関数で、バッククォートで囲んだ内容を SQL 式として評価させる。
+タイムスタンプは SQLite の `CURRENT_TIMESTAMP` 関数が評価し、PC のシステムクロックから取得する（ネット不要）。
+
 ---
 
 ### Step 6: DB接続ファイル作成
@@ -299,19 +302,44 @@ let _db: Db | null = null;
 export async function initDb(): Promise<Db> {
   const sqlite = await Database.load("sqlite:loglylife.db");
 
-  // テーブルが存在しなければ作成（2回目以降はスキップ）
-  await sqlite.execute(`CREATE TABLE IF NOT EXISTS categories (...)`, []);
-  await sqlite.execute(`CREATE TABLE IF NOT EXISTS activity_logs (...)`, []);
+  await sqlite.execute(
+    `CREATE TABLE IF NOT EXISTS categories (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      parent_id INTEGER,
+      color TEXT,
+      sort_order INTEGER NOT NULL DEFAULT 0,
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )`,
+    []
+  );
 
-  // Tauri の SQL プラグインを Drizzle のドライバーとして橋渡しする
-  _db = drizzle(async (sql, params, method) => {
-    if (method === "run") {
-      await sqlite.execute(sql, params as unknown[]);
-      return { rows: [] };
-    }
-    const rows = await sqlite.select<Record<string, unknown>[]>(sql, params as unknown[]);
-    return { rows: rows.map((row) => Object.values(row)) };
-  }, { schema });
+  await sqlite.execute(
+    `CREATE TABLE IF NOT EXISTS activity_logs (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      date TEXT NOT NULL,
+      category_id INTEGER NOT NULL REFERENCES categories(id),
+      title TEXT NOT NULL,
+      duration_minutes INTEGER,
+      memo TEXT,
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )`,
+    []
+  );
+
+  _db = drizzle(
+    async (sql, params, method) => {
+      if (method === "run") {
+        await sqlite.execute(sql, params as unknown[]);
+        return { rows: [] };
+      }
+      const rows = await sqlite.select<Record<string, unknown>[]>(sql, params as unknown[]);
+      return { rows: rows.map((row) => Object.values(row)) };
+    },
+    { schema }
+  );
 
   return _db;
 }
@@ -324,6 +352,14 @@ export function getDb(): Db {
 
 **`sqlite-proxy` を使う理由:**
 Drizzle ORM は通常 Node.js 環境向けに作られており、Tauri の SQLite プラグインに直接対応していない。`sqlite-proxy` はカスタムドライバーを差し込める仕組みで、Tauri の API を Drizzle が理解できる形に変換している。
+
+**DBファイルの保存場所:**
+`C:\Users\ichito0229\AppData\Roaming\com.ichito0229.tauri-app\loglylife.db`
+
+削除したい場合：
+```powershell
+Remove-Item "$env:APPDATA\com.ichito0229.tauri-app\loglylife.db"
+```
 
 ---
 
@@ -350,68 +386,44 @@ initDb().then(() => {
 
 ---
 
-### 次のステップ
-- [x] 最小のデータ登録（INSERT）を試す
-- [x] 最小のデータ取得（SELECT）を試す
-- [ ] UI からログを登録できるようにする
+### Step 8: INSERT / SELECT の動作確認
 
----
-
-## #3 INSERT / SELECT の動作確認
-**日付:** 2026-04-26
-
-### やったこと
-テスト用の `App.tsx` を作り、DB への INSERT と SELECT が実際に動くか確認した。
-
-### トラブル①：真っ白な画面
-
-`npm run tauri dev` でアプリを起動したら画面が真っ白になった。
-
-**原因:** `capabilities/default.json` の `"sql:default"` に `execute` の権限が含まれていなかった。
-
-**解決:** 個別の権限を明示的に指定する。
-
-```json
-// 変更前
-"sql:default"
-
-// 変更後
-"sql:allow-load",
-"sql:allow-execute",
-"sql:allow-select"
-```
-
-Tauri 2 は許可リストにない操作をフロントから呼ぶとエラーになる。`sql:default` は期待した権限をすべて含んでいなかったため、必要な操作を1つずつ明示した。
-
----
-
-### トラブル②：タイムスタンプが文字列になる
-
-INSERT 後に SELECT すると `createdAt` が `"CURRENT_TIMESTAMP"` という文字列になっていた。
-
-**原因:** `.default("CURRENT_TIMESTAMP")` と書くと Drizzle が文字列としてそのまま INSERT してしまう。
-
-**解決:** `sql` テンプレートを使って SQL 式として評価させる。
+**変更ファイル:** `src/App.tsx`（テスト用）
 
 ```typescript
-// 変更前
-import { sqliteTable, integer, text } from "drizzle-orm/sqlite-core";
-createdAt: text("created_at").notNull().default("CURRENT_TIMESTAMP"),
+import { useState } from "react";
+import { getDb } from "./db";
+import { categories } from "./db/schema";
 
-// 変更後
-import { sqliteTable, integer, text } from "drizzle-orm/sqlite-core";
-import { sql } from "drizzle-orm";
-createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+function App() {
+  const [result, setResult] = useState<string>("");
+
+  async function testInsert() {
+    const db = getDb();
+    await db.insert(categories).values({ name: "学習" });
+    setResult("INSERT 成功！");
+  }
+
+  async function testSelect() {
+    const db = getDb();
+    const rows = await db.select().from(categories);
+    setResult(JSON.stringify(rows, null, 2));
+  }
+
+  return (
+    <main>
+      <h1>DB テスト</h1>
+      <button onClick={testInsert}>INSERT テスト</button>
+      <button onClick={testSelect}>SELECT テスト</button>
+      <pre>{result}</pre>
+    </main>
+  );
+}
+
+export default App;
 ```
 
-`sql\`...\`` は drizzle-orm の関数で、バッククォートで囲んだ内容を文字列ではなく SQL 式として扱う。タイムスタンプは JavaScript の `new Date()` ではなく SQLite の `CURRENT_TIMESTAMP` 関数が評価する。ネット環境なしで動作し、PC のシステムクロックから時刻を取得する。
-
----
-
-### 動作確認結果
-
-- `categories` テーブルへの INSERT・SELECT が正常に動作することを確認
-- タイムスタンプに実際の日時が記録されることを確認
+INSERT → SELECT でタイムスタンプ付きのデータが返ってくることを確認。
 
 ---
 

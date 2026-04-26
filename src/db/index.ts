@@ -1,6 +1,7 @@
 import Database from "@tauri-apps/plugin-sql";
 import {drizzle} from "drizzle-orm/sqlite-proxy";
 import * as schema from "./schema";
+import { count } from "drizzle-orm";
 
 type Db = ReturnType<typeof drizzle<typeof schema>>;
 let _db: Db | null = null;
@@ -48,6 +49,17 @@ let _db: Db | null = null;
         },
         {schema}
     );
+
+    const existingCategories = await sqlite.select<{count: number}[]>(
+        "SELECT COUNT(*) as count FROM categories",
+        []
+    );
+    if (existingCategories[0].count === 0){
+        const defaults = ["学習","開発","就活","その他"];
+        for (const name of defaults) {
+            await sqlite.execute("INSERT INTO categories (name) VALUES (?)",[name]);
+        }
+    }
     return _db;
   }
   export function getDb(): Db {
