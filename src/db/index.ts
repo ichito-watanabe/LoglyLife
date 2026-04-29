@@ -30,6 +30,7 @@ export async function initDb(): Promise<Db> {
       title TEXT,
       duration_minutes INTEGER,
       memo TEXT,
+      mood INTEGER,
       created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
       updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
     )`,
@@ -79,11 +80,12 @@ export async function insertActivityLog(params: {
   date: string;
   durationMinutes: number | null;
   memo: string | null;
+  mood: number | null;
 }): Promise<number> {
   if (!_sqlite) throw new Error("DB not initialized. Call initDb() first.");
   await _sqlite.execute(
-    "INSERT INTO activity_logs (date, duration_minutes, memo) VALUES (?, ?, ?)",
-    [params.date, params.durationMinutes, params.memo]
+    "INSERT INTO activity_logs (date, duration_minutes, memo, mood) VALUES (?, ?, ?, ?)",
+    [params.date, params.durationMinutes, params.memo, params.mood]
   );
   const rows = await _sqlite.select<{ id: number }[]>(
     "SELECT MAX(id) as id FROM activity_logs",

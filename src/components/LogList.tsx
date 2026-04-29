@@ -9,6 +9,7 @@ type Log = {
   date: string;
   durationMinutes: number | null;
   memo: string | null;
+  mood: number | null;
   tags: string[];
   categoryIds: number[];
 };
@@ -18,6 +19,7 @@ type EditingLog = {
   date: string;
   durationMinutes: number | null;
   memo: string | null;
+  mood: number | null;
   categoryIds: number[];
 };
 
@@ -33,6 +35,7 @@ export function LogList({ refreshKey }: { refreshKey: number }) {
         date: activityLogs.date,
         durationMinutes: activityLogs.durationMinutes,
         memo: activityLogs.memo,
+        mood: activityLogs.mood,
       }).from(activityLogs).orderBy(desc(activityLogs.date)),
 
       db.select({
@@ -76,6 +79,7 @@ export function LogList({ refreshKey }: { refreshKey: number }) {
           <tr>
             <th>日付</th>
             <th>タグ</th>
+            <th>気分</th>
             <th>時間</th>
             <th>メモ</th>
             <th></th>
@@ -95,6 +99,7 @@ export function LogList({ refreshKey }: { refreshKey: number }) {
                   ))}
                 </div>
               </td>
+              <td>{log.mood != null ? ["","最悪","悪い","普通","良い","最高"][log.mood] : "-"} </td>
               <td>{log.durationMinutes != null ? `${log.durationMinutes}分` : "—"}</td>
               <td>{log.memo ?? "—"}</td>
               <td>

@@ -10,6 +10,7 @@ export function LogForm({ onAdded, categoryRefreshKey }: { onAdded: () => void; 
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<Set<number>>(new Set());
   const [duration, setDuration] = useState("");
   const [memo, setMemo] = useState("");
+  const [mood, setMood] = useState(3)
   const [message, setMessage] = useState("");
 
   useEffect(() => {
@@ -43,6 +44,7 @@ export function LogForm({ onAdded, categoryRefreshKey }: { onAdded: () => void; 
       date,
       durationMinutes: duration ? Number(duration) : null,
       memo: memo || null,
+      mood,
     });
 
     const allCategoryIds = new Set<number>();
@@ -60,6 +62,7 @@ export function LogForm({ onAdded, categoryRefreshKey }: { onAdded: () => void; 
     setSelectedCategoryIds(new Set());
     setDuration("");
     setMemo("");
+    setMood(3);
   }
 
   return (
@@ -94,6 +97,16 @@ export function LogForm({ onAdded, categoryRefreshKey }: { onAdded: () => void; 
         <div>
           <label>メモ</label>
           <textarea value={memo} onChange={(e) => setMemo(e.target.value)} />
+        </div>
+        <div>
+          <label>気分: {["","最悪","悪い","普通","良い","最高"][mood]}</label>
+          <input
+            type = "range"
+            min = "1"
+            max = "5"
+            value = {mood}
+            onChange = {(e) => setMood(Number(e.target.value))}
+            />
         </div>
         <button type="submit">登録する</button>
       </form>

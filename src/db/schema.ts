@@ -17,6 +17,7 @@ export const activityLogs = sqliteTable("activity_logs", {
   title: text("title"),
   durationMinutes: integer("duration_minutes"),
   memo: text("memo"),
+  mood: integer("mood"),
   createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
   updatedAt: text("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
 });

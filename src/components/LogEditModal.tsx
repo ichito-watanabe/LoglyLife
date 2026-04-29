@@ -10,6 +10,7 @@ type Log = {
   date: string;
   durationMinutes: number | null;
   memo: string | null;
+  mood: number | null;
   categoryIds: number[];
 };
 
@@ -24,6 +25,7 @@ export function LogEditModal({ log, onSaved, onClose }: Props) {
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<Set<number>>(new Set(log.categoryIds));
   const [duration, setDuration] = useState(log.durationMinutes != null ? String(log.durationMinutes) : "");
   const [memo, setMemo] = useState(log.memo ?? "");
+  const [mood, setMood] = useState(log.mood ?? 3);
   const [categoryList, setCategoryList] = useState<Category[]>([]);
 
   useEffect(() => {
@@ -55,7 +57,7 @@ export function LogEditModal({ log, onSaved, onClose }: Props) {
     const db = getDb();
 
     await db.update(activityLogs)
-      .set({ date, durationMinutes: duration ? Number(duration) : null, memo: memo || null })
+      .set({ date, durationMinutes: duration ? Number(duration) : null, memo: memo || null, mood })
       .where(eq(activityLogs.id, log.id));
 
     await db.delete(activityLogCategories).where(eq(activityLogCategories.logId, log.id));
@@ -108,6 +110,16 @@ export function LogEditModal({ log, onSaved, onClose }: Props) {
           <div>
             <label>メモ</label>
             <textarea value={memo} onChange={(e) => setMemo(e.target.value)} />
+          </div>
+          <div>
+            <label> 気分 : {["","最悪","悪い","普通","良い","最高"][mood]}</label>
+            <input
+              type="range"
+              min ="1"
+              max ="5"
+              value = {mood}
+              onChange = {(e) => setMood(Number(e.target.value))}
+              />
           </div>
           <div style={{ display: "flex", gap: "8px", marginTop: "16px" }}>
             <button type="submit">保存</button>
