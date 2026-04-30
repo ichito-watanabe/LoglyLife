@@ -32,13 +32,11 @@ export function CategoryTree({ allCategories, selectedIds, onSelect }: Props) {
 
   function handleClick(id: number) {
     if (timerRef.current) {
-      // 250ms以内に2回 = ダブルクリック → 中に入る
       clearTimeout(timerRef.current);
       timerRef.current = null;
       setViewParentId(id);
       onSelect?.(id);
     } else {
-      // 1回目 → 250ms待ってシングルクリックと確定したら選択
       timerRef.current = setTimeout(() => {
         timerRef.current = null;
         onSelect?.(id);
@@ -47,12 +45,12 @@ export function CategoryTree({ allCategories, selectedIds, onSelect }: Props) {
   }
 
   return (
-    <div style={{ border: "1px solid #ccc", borderRadius: "4px", padding: "8px", minWidth: "200px" }}>
-      <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "6px", borderBottom: "1px solid #eee", paddingBottom: "6px" }}>
+    <div className="cat-tree">
+      <div className="cat-tree-header">
         {viewParentId !== null && (
-          <button type="button" onClick={goUp} style={{ padding: "2px 8px", cursor: "pointer" }}>← 戻る</button>
+          <button type="button" onClick={goUp} className="cat-tree-back">← 戻る</button>
         )}
-        <span style={{ fontSize: "0.85em", color: "#666" }}>{getBreadcrumb()}</span>
+        <span className="cat-tree-breadcrumb">{getBreadcrumb()}</span>
       </div>
 
       {visibleItems.map((cat) => {
@@ -62,29 +60,20 @@ export function CategoryTree({ allCategories, selectedIds, onSelect }: Props) {
           <div
             key={cat.id}
             onClick={() => handleClick(cat.id)}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              padding: "4px 6px",
-              backgroundColor: isSelected ? "#dbeafe" : "transparent",
-              borderRadius: "4px",
-              cursor: "pointer",
-              userSelect: "none",
-            }}
+            className={`cat-tree-item ${isSelected ? "cat-tree-item--selected" : ""}`}
           >
-            <span style={{ fontWeight: isSelected ? "bold" : "normal" }}>
+            <span className="cat-tree-name">
               {isSelected && "✓ "}{cat.name}
             </span>
             {hasChildren && (
-              <span style={{ fontSize: "0.7em", color: "#bbb" }}>ダブルクリックで展開</span>
+              <span className="cat-tree-hint">ダブルクリックで展開 ›</span>
             )}
           </div>
         );
       })}
 
       {visibleItems.length === 0 && (
-        <div style={{ color: "#999", fontSize: "0.85em", padding: "4px 6px" }}>子カテゴリなし</div>
+        <div className="cat-tree-empty">子カテゴリなし</div>
       )}
     </div>
   );

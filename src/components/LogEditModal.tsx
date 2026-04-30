@@ -22,7 +22,7 @@ type Props = {
 
 export function LogEditModal({ log, onSaved, onClose }: Props) {
   const [date, setDate] = useState(log.date);
-  const [selectedCategoryIds, setSelectedCategoryIds] = useState<Set<number>>(new Set(log.categoryIds));
+  const [selectedCategoryIds, setSelectedCategoryIds] = useState<Set<number>>(new Set());
   const [duration, setDuration] = useState(log.durationMinutes != null ? String(log.durationMinutes) : "");
   const [memo, setMemo] = useState(log.memo ?? "");
   const [mood, setMood] = useState(log.mood ?? 3);
@@ -32,13 +32,26 @@ export function LogEditModal({ log, onSaved, onClose }: Props) {
     const db = getDb();
     db.select({ id: categories.id, name: categories.name, parentId: categories.parentId })
       .from(categories)
-      .then(setCategoryList);
+      .then((list) => {
+        setCategoryList(list);
+        const leafIds = log.categoryIds.filter((id) =>
+          !log.categoryIds.some((otherId) => {
+            const other = list.find((c) => c.id === otherId);
+            return other?.parentId === id;
+          })
+        );
+        setSelectedCategoryIds(new Set(leafIds));
+      });
   }, []);
 
   function toggleCategory(id: number) {
     setSelectedCategoryIds((prev) => {
       const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
+      if (next.has(id)) {
+        next.delete(id);
+      } else if (next.size < 3) {
+        next.add(id);
+      }
       return next;
     });
   }

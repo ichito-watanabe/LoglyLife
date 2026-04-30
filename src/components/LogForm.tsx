@@ -8,9 +8,9 @@ export function LogForm({ onAdded, categoryRefreshKey }: { onAdded: () => void; 
   const [categoryList, setCategoryList] = useState<Category[]>([]);
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<Set<number>>(new Set());
-  const [duration, setDuration] = useState("");
+  const [duration, setDuration] = useState(0);
   const [memo, setMemo] = useState("");
-  const [mood, setMood] = useState(3)
+  const [mood, setMood] = useState(5)
   const [message, setMessage] = useState("");
 
   useEffect(() => {
@@ -23,7 +23,11 @@ export function LogForm({ onAdded, categoryRefreshKey }: { onAdded: () => void; 
   function toggleCategory(id: number) {
     setSelectedCategoryIds((prev) => {
       const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
+      if (next.has(id)) {
+        next.delete(id);
+      } else if (next.size < 3) {
+        next.add(id);
+      }
       return next;
     });
   }
@@ -42,7 +46,7 @@ export function LogForm({ onAdded, categoryRefreshKey }: { onAdded: () => void; 
     const db = getDb();
     const logId = await insertActivityLog({
       date,
-      durationMinutes: duration ? Number(duration) : null,
+      durationMinutes: duration > 0 ? duration : null,
       memo: memo || null,
       mood,
     });
@@ -60,9 +64,9 @@ export function LogForm({ onAdded, categoryRefreshKey }: { onAdded: () => void; 
     setMessage("登録しました！");
     onAdded();
     setSelectedCategoryIds(new Set());
-    setDuration("");
+    setDuration(0);
     setMemo("");
-    setMood(3);
+    setMood(5);
   }
 
   return (
@@ -73,40 +77,68 @@ export function LogForm({ onAdded, categoryRefreshKey }: { onAdded: () => void; 
           <input type="date" value={date} onChange={(e) => setDate(e.target.value)} required />
         </div>
         <div>
-          <label>カテゴリ（シングルクリックで選択・ダブルクリックで展開）</label>
+          <label>カテゴリ（最大3つ・シングルクリックで選択・ダブルクリックで展開）</label>
           <CategoryTree
             allCategories={categoryList}
             selectedIds={selectedCategoryIds}
             onSelect={toggleCategory}
           />
           {selectedCategoryIds.size > 0 && (
-            <div style={{ display: "flex", flexWrap: "wrap", gap: "4px", marginTop: "6px" }}>
+            <div className="cat-selected-list">
               {[...selectedCategoryIds].map((id) => (
-                <span key={id} style={{ background: "#dbeafe", borderRadius: "4px", padding: "2px 8px", fontSize: "0.85em" }}>
+                <span key={id} className="cat-selected-tag">
                   {buildPath(categoryList, id)}
-                  <span onClick={() => removeCategory(id)} style={{ cursor: "pointer", marginLeft: "6px", color: "#999" }}>×</span>
+                  <span onClick={() => removeCategory(id)} className="cat-selected-remove">×</span>
                 </span>
               ))}
             </div>
           )}
         </div>
         <div>
-          <label>作業時間（分）</label>
-          <input type="number" value={duration} onChange={(e) => setDuration(e.target.value)} min="1" />
+          <label>作業時間</label>
+          <div className="duration-display">{duration > 0 ? `${duration} 分` : "-- 分"}</div>
+          <div className="duration-btns">
+            {[1, 5, 10, 30, 60].map((n) => (
+              <button
+                key={n}
+                type="button"
+                className="duration-add-btn"
+                onClick={() => setDuration((d) => d + n)}
+              >
+                +{n}
+              </button>
+            ))}
+            <button
+              type="button"
+              className="duration-reset-btn"
+              onClick={() => setDuration(0)}
+            >
+              RST
+            </button>
+          </div>
         </div>
         <div>
           <label>メモ</label>
           <textarea value={memo} onChange={(e) => setMemo(e.target.value)} />
         </div>
         <div>
-          <label>気分: {["","最悪","悪い","普通","良い","最高"][mood]}</label>
-          <input
-            type = "range"
-            min = "1"
-            max = "5"
-            value = {mood}
-            onChange = {(e) => setMood(Number(e.target.value))}
+          <label>気分</label>
+          <div className="hw-slider-wrap">
+            <div className="hw-slider-labels">
+              <span>最低</span>
+              <span>普通</span>
+              <span>最高</span>
+            </div>
+            <input
+              type="range"
+              className="hw-slider"
+              min="1"
+              max="10"
+              value={mood}
+              onChange={(e) => setMood(Number(e.target.value))}
             />
+            <div className="hw-slider-value">{mood} / 10</div>
+          </div>
         </div>
         <button type="submit">登録する</button>
       </form>

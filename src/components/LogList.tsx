@@ -42,23 +42,26 @@ export function LogList({ refreshKey }: { refreshKey: number }) {
         logId: activityLogCategories.logId,
         categoryId: activityLogCategories.categoryId,
         categoryName: categories.name,
+        parentId: categories.parentId,
       }).from(activityLogCategories)
         .innerJoin(categories, eq(categories.id, activityLogCategories.categoryId)),
     ]);
 
-    const tagsByLog = new Map<number, string[]>();
-    const idsByLog = new Map<number, number[]>();
+    type CatInfo = { id: number; name: string; parentId: number | null };
+    const catInfoByLog = new Map<number, CatInfo[]>();
     for (const row of catRows) {
-      if (!tagsByLog.has(row.logId)) tagsByLog.set(row.logId, []);
-      if (!idsByLog.has(row.logId)) idsByLog.set(row.logId, []);
-      tagsByLog.get(row.logId)!.push(row.categoryName);
-      idsByLog.get(row.logId)!.push(row.categoryId);
+      if (!catInfoByLog.has(row.logId)) catInfoByLog.set(row.logId, []);
+      catInfoByLog.get(row.logId)!.push({ id: row.categoryId, name: row.categoryName, parentId: row.parentId });
     }
-    setLogs(logRows.map((log) => ({
-      ...log,
-      tags: tagsByLog.get(log.id) ?? [],
-      categoryIds: idsByLog.get(log.id) ?? [],
-    })));
+    setLogs(logRows.map((log) => {
+      const cats = catInfoByLog.get(log.id) ?? [];
+      const leafCats = cats.filter((c) => !cats.some((other) => other.parentId === c.id));
+      return {
+        ...log,
+        tags: leafCats.map((c) => c.name),
+        categoryIds: cats.map((c) => c.id),
+      };
+    }));
   }
 
   useEffect(() => { loadLogs(); }, [refreshKey]);

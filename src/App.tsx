@@ -2,8 +2,12 @@ import { useState } from "react";
 import { CategoryForm } from "./components/CategoryForm";
 import { LogForm } from "./components/LogForm";
 import { LogList } from "./components/LogList";
-
-type Page = "log" | "category";
+import { CalendarView } from "./components/CalendarView";
+import { Dashboard } from "./components/Dashboard";
+import { TaskPage } from "./components/TaskPage";
+import { DeskScene } from "./components/DeskScene";
+import { BottomNav, type Page } from "./components/BottomNav";
+import "./App.css";
 
 function App() {
   const [page, setPage] = useState<Page>("log");
@@ -11,30 +15,27 @@ function App() {
   const [categoryRefreshKey, setCategoryRefreshKey] = useState(0);
 
   return (
-    <>
-      <nav style={{ display: "flex", gap: "8px", padding: "8px", borderBottom: "1px solid #ccc" }}>
-        <button onClick={() => setPage("log")} style={{ fontWeight: page === "log" ? "bold" : "normal" }}>
-          ログ記録
-        </button>
-        <button onClick={() => setPage("category")} style={{ fontWeight: page === "category" ? "bold" : "normal" }}>
-          カテゴリ管理
-        </button>
-      </nav>
+    <div className="app">
+      <DeskScene>
+        {page === "log" && (
+          <>
+            <LogForm
+              onAdded={() => setRefreshKey((k) => k + 1)}
+              categoryRefreshKey={categoryRefreshKey}
+            />
+            <LogList refreshKey={refreshKey} />
+          </>
+        )}
+        {page === "category" && (
+          <CategoryForm onAdded={() => setCategoryRefreshKey((k) => k + 1)} />
+        )}
+        {page === "task"      && <TaskPage />}
+        {page === "calendar"  && <CalendarView />}
+        {page === "dashboard" && <Dashboard />}
+      </DeskScene>
 
-      {page === "log" && (
-        <>
-          <LogForm
-            onAdded={() => setRefreshKey((k) => k + 1)}
-            categoryRefreshKey={categoryRefreshKey}
-          />
-          <LogList refreshKey={refreshKey} />
-        </>
-      )}
-
-      {page === "category" && (
-        <CategoryForm onAdded={() => setCategoryRefreshKey((k) => k + 1)} />
-      )}
-    </>
+      <BottomNav current={page} onChange={setPage} />
+    </div>
   );
 }
 

@@ -1,0 +1,235 @@
+{ "frames": {
+   "スプライト-0007 0.aseprite": {
+    "frame": { "x": 0, "y": 0, "w": 256, "h": 160 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 256, "h": 160 },
+    "sourceSize": { "w": 256, "h": 160 },
+    "duration": 100
+   },
+   "スプライト-0007 1.aseprite": {
+    "frame": { "x": 256, "y": 0, "w": 256, "h": 160 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 256, "h": 160 },
+    "sourceSize": { "w": 256, "h": 160 },
+    "duration": 100
+   },
+   "スプライト-0007 2.aseprite": {
+    "frame": { "x": 512, "y": 0, "w": 256, "h": 160 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 256, "h": 160 },
+    "sourceSize": { "w": 256, "h": 160 },
+    "duration": 100
+   },
+   "スプライト-0007 3.aseprite": {
+    "frame": { "x": 768, "y": 0, "w": 256, "h": 160 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 256, "h": 160 },
+    "sourceSize": { "w": 256, "h": 160 },
+    "duration": 100
+   },
+   "スプライト-0007 4.aseprite": {
+    "frame": { "x": 1024, "y": 0, "w": 256, "h": 160 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 256, "h": 160 },
+    "sourceSize": { "w": 256, "h": 160 },
+    "duration": 100
+   },
+   "スプライト-0007 5.aseprite": {
+    "frame": { "x": 1280, "y": 0, "w": 256, "h": 160 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 256, "h": 160 },
+    "sourceSize": { "w": 256, "h": 160 },
+    "duration": 100
+   },
+   "スプライト-0007 6.aseprite": {
+    "frame": { "x": 1536, "y": 0, "w": 256, "h": 160 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 256, "h": 160 },
+    "sourceSize": { "w": 256, "h": 160 },
+    "duration": 100
+   },
+   "スプライト-0007 7.aseprite": {
+    "frame": { "x": 1792, "y": 0, "w": 256, "h": 160 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 256, "h": 160 },
+    "sourceSize": { "w": 256, "h": 160 },
+    "duration": 100
+   },
+   "スプライト-0007 8.aseprite": {
+    "frame": { "x": 2048, "y": 0, "w": 256, "h": 160 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 256, "h": 160 },
+    "sourceSize": { "w": 256, "h": 160 },
+    "duration": 100
+   },
+   "スプライト-0007 9.aseprite": {
+    "frame": { "x": 2304, "y": 0, "w": 256, "h": 160 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 256, "h": 160 },
+    "sourceSize": { "w": 256, "h": 160 },
+    "duration": 100
+   },
+   "スプライト-0007 10.aseprite": {
+    "frame": { "x": 2560, "y": 0, "w": 256, "h": 160 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 256, "h": 160 },
+    "sourceSize": { "w": 256, "h": 160 },
+    "duration": 100
+   },
+   "スプライト-0007 11.aseprite": {
+    "frame": { "x": 2816, "y": 0, "w": 256, "h": 160 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 256, "h": 160 },
+    "sourceSize": { "w": 256, "h": 160 },
+    "duration": 100
+   },
+   "スプライト-0007 12.aseprite": {
+    "frame": { "x": 3072, "y": 0, "w": 256, "h": 160 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 256, "h": 160 },
+    "sourceSize": { "w": 256, "h": 160 },
+    "duration": 100
+   },
+   "スプライト-0007 13.aseprite": {
+    "frame": { "x": 3328, "y": 0, "w": 256, "h": 160 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 256, "h": 160 },
+    "sourceSize": { "w": 256, "h": 160 },
+    "duration": 100
+   },
+   "スプライト-0007 14.aseprite": {
+    "frame": { "x": 3584, "y": 0, "w": 256, "h": 160 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 256, "h": 160 },
+    "sourceSize": { "w": 256, "h": 160 },
+    "duration": 100
+   },
+   "スプライト-0007 15.aseprite": {
+    "frame": { "x": 3840, "y": 0, "w": 256, "h": 160 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 256, "h": 160 },
+    "sourceSize": { "w": 256, "h": 160 },
+    "duration": 100
+   },
+   "スプライト-0007 16.aseprite": {
+    "frame": { "x": 4096, "y": 0, "w": 256, "h": 160 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 256, "h": 160 },
+    "sourceSize": { "w": 256, "h": 160 },
+    "duration": 100
+   },
+   "スプライト-0007 17.aseprite": {
+    "frame": { "x": 4352, "y": 0, "w": 256, "h": 160 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 256, "h": 160 },
+    "sourceSize": { "w": 256, "h": 160 },
+    "duration": 100
+   },
+   "スプライト-0007 18.aseprite": {
+    "frame": { "x": 4608, "y": 0, "w": 256, "h": 160 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 256, "h": 160 },
+    "sourceSize": { "w": 256, "h": 160 },
+    "duration": 100
+   },
+   "スプライト-0007 19.aseprite": {
+    "frame": { "x": 4864, "y": 0, "w": 256, "h": 160 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 256, "h": 160 },
+    "sourceSize": { "w": 256, "h": 160 },
+    "duration": 100
+   },
+   "スプライト-0007 20.aseprite": {
+    "frame": { "x": 5120, "y": 0, "w": 256, "h": 160 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 256, "h": 160 },
+    "sourceSize": { "w": 256, "h": 160 },
+    "duration": 100
+   },
+   "スプライト-0007 21.aseprite": {
+    "frame": { "x": 5376, "y": 0, "w": 256, "h": 160 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 256, "h": 160 },
+    "sourceSize": { "w": 256, "h": 160 },
+    "duration": 100
+   },
+   "スプライト-0007 22.aseprite": {
+    "frame": { "x": 5632, "y": 0, "w": 256, "h": 160 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 256, "h": 160 },
+    "sourceSize": { "w": 256, "h": 160 },
+    "duration": 100
+   },
+   "スプライト-0007 23.aseprite": {
+    "frame": { "x": 5888, "y": 0, "w": 256, "h": 160 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 256, "h": 160 },
+    "sourceSize": { "w": 256, "h": 160 },
+    "duration": 100
+   },
+   "スプライト-0007 24.aseprite": {
+    "frame": { "x": 6144, "y": 0, "w": 256, "h": 160 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 256, "h": 160 },
+    "sourceSize": { "w": 256, "h": 160 },
+    "duration": 100
+   },
+   "スプライト-0007 25.aseprite": {
+    "frame": { "x": 6400, "y": 0, "w": 256, "h": 160 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 256, "h": 160 },
+    "sourceSize": { "w": 256, "h": 160 },
+    "duration": 100
+   },
+   "スプライト-0007 26.aseprite": {
+    "frame": { "x": 6656, "y": 0, "w": 256, "h": 160 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 256, "h": 160 },
+    "sourceSize": { "w": 256, "h": 160 },
+    "duration": 100
+   }
+ },
+ "meta": {
+  "app": "https://www.aseprite.org/",
+  "version": "1.3.17.2-x64",
+  "image": "note-0007.png",
+  "format": "RGBA8888",
+  "size": { "w": 6912, "h": 160 },
+  "scale": "1",
+  "frameTags": [
+  ],
+  "layers": [
+   { "name": "レイヤー 1 コピー", "opacity": 255, "blendMode": "normal" },
+   { "name": "レイヤー 1", "opacity": 255, "blendMode": "normal" }
+  ],
+  "slices": [
+  ]
+ }
+}

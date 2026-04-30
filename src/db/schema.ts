@@ -27,3 +27,25 @@ export const activityLogCategories = sqliteTable("activity_log_categories", {
   logId: integer("log_id").notNull().references(() => activityLogs.id),
   categoryId: integer("category_id").notNull().references(() => categories.id),
 });
+
+export const tasks = sqliteTable("tasks", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  title: text("title").notNull(),
+  recurrenceDays: text("recurrence_days"),
+  createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+});
+
+export const taskCategories = sqliteTable("task_categories", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  taskId: integer("task_id").notNull().references(() => tasks.id),
+  categoryId: integer("category_id").notNull().references(() => categories.id),
+});
+
+export const taskCompletions = sqliteTable("task_completions", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  taskId: integer("task_id").notNull().references(() => tasks.id),
+  completedDate: text("completed_date").notNull(),
+  durationMinutes: integer("duration_minutes"),
+  memo: text("memo"),
+  logId: integer("log_id"),
+});

@@ -46,6 +46,37 @@ export async function initDb(): Promise<Db> {
     []
   );
 
+  await sqlite.execute(
+    `CREATE TABLE IF NOT EXISTS tasks (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      title TEXT NOT NULL,
+      recurrence_days TEXT,
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )`,
+    []
+  );
+
+  await sqlite.execute(
+    `CREATE TABLE IF NOT EXISTS task_categories (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      task_id INTEGER NOT NULL REFERENCES tasks(id),
+      category_id INTEGER NOT NULL REFERENCES categories(id)
+    )`,
+    []
+  );
+
+  await sqlite.execute(
+    `CREATE TABLE IF NOT EXISTS task_completions (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      task_id INTEGER NOT NULL REFERENCES tasks(id),
+      completed_date TEXT NOT NULL,
+      duration_minutes INTEGER,
+      memo TEXT,
+      log_id INTEGER REFERENCES activity_logs(id)
+    )`,
+    []
+  );
+
   _db = drizzle(
     async (sql, params, method) => {
       if (method === "run") {
@@ -78,17 +109,34 @@ export function getDb(): Db {
 
 export async function insertActivityLog(params: {
   date: string;
+  title?: string | null;
   durationMinutes: number | null;
   memo: string | null;
   mood: number | null;
 }): Promise<number> {
   if (!_sqlite) throw new Error("DB not initialized. Call initDb() first.");
   await _sqlite.execute(
-    "INSERT INTO activity_logs (date, duration_minutes, memo, mood) VALUES (?, ?, ?, ?)",
-    [params.date, params.durationMinutes, params.memo, params.mood]
+    "INSERT INTO activity_logs (date, title, duration_minutes, memo, mood) VALUES (?, ?, ?, ?, ?)",
+    [params.date, params.title ?? null, params.durationMinutes, params.memo, params.mood]
   );
   const rows = await _sqlite.select<{ id: number }[]>(
     "SELECT MAX(id) as id FROM activity_logs",
+    []
+  );
+  return rows[0].id;
+}
+
+export async function insertTask(params: {
+  title: string;
+  recurrenceDays: string | null;
+}): Promise<number> {
+  if (!_sqlite) throw new Error("DB not initialized. Call initDb() first.");
+  await _sqlite.execute(
+    "INSERT INTO tasks (title, recurrence_days) VALUES (?, ?)",
+    [params.title, params.recurrenceDays]
+  );
+  const rows = await _sqlite.select<{ id: number }[]>(
+    "SELECT MAX(id) as id FROM tasks",
     []
   );
   return rows[0].id;
