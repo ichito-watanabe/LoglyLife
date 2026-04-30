@@ -1,11 +1,11 @@
 export type Page = "log" | "calendar" | "dashboard" | "task" | "category";
 
 const NAV_ITEMS: { page: Page; label: string; icon: string }[] = [
-  { page: "log",      label: "きろく",     icon: "📝" },
-  { page: "calendar", label: "カレンダー", icon: "📅" },
-  { page: "task",     label: "タスク",     icon: "✅" },
-  { page: "dashboard",label: "ふりかえり", icon: "📊" },
-  { page: "category", label: "せってい",   icon: "⚙️" },
+  { page: "log",       label: "ホーム",       icon: "📻" },
+  { page: "calendar",  label: "カレンダー",   icon: "📅" },
+  { page: "task",      label: "タスク",       icon: "☑️" },
+  { page: "dashboard", label: "ふりかえり",   icon: "📒" },
+  { page: "category",  label: "カテゴリ",     icon: "🗂️" },
 ];
 
 interface Props {

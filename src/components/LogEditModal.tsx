@@ -25,7 +25,7 @@ export function LogEditModal({ log, onSaved, onClose }: Props) {
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<Set<number>>(new Set());
   const [duration, setDuration] = useState(log.durationMinutes != null ? String(log.durationMinutes) : "");
   const [memo, setMemo] = useState(log.memo ?? "");
-  const [mood, setMood] = useState(log.mood ?? 3);
+  const [mood, setMood] = useState(log.mood ?? 5);
   const [categoryList, setCategoryList] = useState<Category[]>([]);
 
   useEffect(() => {
@@ -66,6 +66,7 @@ export function LogEditModal({ log, onSaved, onClose }: Props) {
 
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
+    e.stopPropagation();
     if (selectedCategoryIds.size === 0) return;
     const db = getDb();
 
@@ -90,10 +91,27 @@ export function LogEditModal({ log, onSaved, onClose }: Props) {
   }
 
   return (
-    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100 }}>
-      <div style={{ background: "white", padding: "24px", borderRadius: "8px", minWidth: "320px" }}>
-        <h2>ログを編集</h2>
-        <form onSubmit={handleSave}>
+    <div style={{
+      position: "fixed", inset: 0,
+      background: "rgba(0,0,0,0.7)",
+      display: "flex", alignItems: "center", justifyContent: "center",
+      zIndex: 100
+    }}>
+      <div style={{
+        background: "linear-gradient(180deg, #231200 0%, #1a0d00 100%)",
+        border: "2px solid #5a3800",
+        boxShadow: "0 8px 32px rgba(0,0,0,0.8), inset 0 1px 0 rgba(200,150,50,0.1)",
+        padding: "20px",
+        minWidth: "340px",
+        maxWidth: "440px",
+        width: "90vw",
+        fontFamily: "'DotGothic16', monospace",
+        color: "#d8b880",
+      }}>
+        <h2 style={{ fontSize: 13, color: "#c8902a", letterSpacing: 2, marginBottom: 14, paddingBottom: 8, borderBottom: "1px solid #4a2800" }}>
+          ログを編集
+        </h2>
+        <form onSubmit={handleSave} className="machine-screen-inner" style={{ padding: 0, height: "auto", overflow: "visible" }}>
           <div>
             <label>日付</label>
             <input type="date" value={date} onChange={(e) => setDate(e.target.value)} required />
@@ -106,11 +124,11 @@ export function LogEditModal({ log, onSaved, onClose }: Props) {
               onSelect={toggleCategory}
             />
             {selectedCategoryIds.size > 0 && (
-              <div style={{ display: "flex", flexWrap: "wrap", gap: "4px", marginTop: "6px" }}>
+              <div className="cat-selected-list">
                 {[...selectedCategoryIds].map((id) => (
-                  <span key={id} style={{ background: "#dbeafe", borderRadius: "4px", padding: "2px 8px", fontSize: "0.85em" }}>
+                  <span key={id} className="cat-selected-tag">
                     {buildPath(categoryList, id)}
-                    <span onClick={() => removeCategory(id)} style={{ cursor: "pointer", marginLeft: "6px", color: "#999" }}>×</span>
+                    <span onClick={() => removeCategory(id)} className="cat-selected-remove">×</span>
                   </span>
                 ))}
               </div>
@@ -125,16 +143,18 @@ export function LogEditModal({ log, onSaved, onClose }: Props) {
             <textarea value={memo} onChange={(e) => setMemo(e.target.value)} />
           </div>
           <div>
-            <label> 気分 : {["","最悪","悪い","普通","良い","最高"][mood]}</label>
+            <label>気分（1〜10）: {mood}</label>
             <input
               type="range"
-              min ="1"
-              max ="5"
-              value = {mood}
-              onChange = {(e) => setMood(Number(e.target.value))}
-              />
+              min="1"
+              max="10"
+              value={mood}
+              onChange={(e) => setMood(Number(e.target.value))}
+              className="hw-slider"
+              style={{ marginBottom: 8 }}
+            />
           </div>
-          <div style={{ display: "flex", gap: "8px", marginTop: "16px" }}>
+          <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
             <button type="submit">保存</button>
             <button type="button" onClick={onClose}>キャンセル</button>
           </div>

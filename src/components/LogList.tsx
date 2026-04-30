@@ -23,6 +23,8 @@ type EditingLog = {
   categoryIds: number[];
 };
 
+const MOOD_SHORT = ["", "最悪", "悪い", "普通", "良い", "最高", "良い", "とても良", "素晴らしい", "完璧", "最高"];
+
 export function LogList({ refreshKey }: { refreshKey: number }) {
   const [logs, setLogs] = useState<Log[]>([]);
   const [editingLog, setEditingLog] = useState<EditingLog | null>(null);
@@ -56,11 +58,7 @@ export function LogList({ refreshKey }: { refreshKey: number }) {
     setLogs(logRows.map((log) => {
       const cats = catInfoByLog.get(log.id) ?? [];
       const leafCats = cats.filter((c) => !cats.some((other) => other.parentId === c.id));
-      return {
-        ...log,
-        tags: leafCats.map((c) => c.name),
-        categoryIds: cats.map((c) => c.id),
-      };
+      return { ...log, tags: leafCats.map((c) => c.name), categoryIds: cats.map((c) => c.id) };
     }));
   }
 
@@ -73,52 +71,54 @@ export function LogList({ refreshKey }: { refreshKey: number }) {
     await loadLogs();
   }
 
-  if (logs.length === 0) return <p>ログがまだありません</p>;
-
   return (
-    <section>
-      <table>
-        <thead>
-          <tr>
-            <th>日付</th>
-            <th>タグ</th>
-            <th>気分</th>
-            <th>時間</th>
-            <th>メモ</th>
-            <th></th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          {logs.map((log) => (
-            <tr key={log.id}>
-              <td>{log.date}</td>
-              <td>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: "4px" }}>
-                  {log.tags.map((tag) => (
-                    <span key={tag} style={{ background: "#f1f5f9", borderRadius: "4px", padding: "1px 6px", fontSize: "0.85em" }}>
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              </td>
-              <td>{log.mood != null ? ["","最悪","悪い","普通","良い","最高"][log.mood] : "-"} </td>
-              <td>{log.durationMinutes != null ? `${log.durationMinutes}分` : "—"}</td>
-              <td>{log.memo ?? "—"}</td>
-              <td>
-                <button onClick={() => setEditingLog(log)} style={{ cursor: "pointer" }}>
+    <div className="log-list-panel">
+      <div className="log-list-header">
+        <span style={{ flex: "0 0 68px" }}>日付</span>
+        <span style={{ flex: 1 }}>タグ</span>
+        <span style={{ flex: "0 0 28px" }}>気分</span>
+        <span style={{ flex: "0 0 36px" }}>時間</span>
+        <span style={{ flex: "0 0 48px" }}></span>
+      </div>
+
+      <div className="log-list-scroll">
+        {logs.length === 0 ? (
+          <div className="log-list-empty">ログがまだありません</div>
+        ) : (
+          logs.map((log) => (
+            <div key={log.id} className="log-entry">
+              <span className="log-entry-date">{log.date}</span>
+              <div className="log-entry-tags">
+                {log.tags.map((tag) => (
+                  <span key={tag} className="log-tag">{tag}</span>
+                ))}
+              </div>
+              <span className="log-entry-mood">
+                {log.mood != null ? (MOOD_SHORT[log.mood] ?? "-") : "-"}
+              </span>
+              <span className="log-entry-time">
+                {log.durationMinutes != null ? `${log.durationMinutes}分` : "—"}
+              </span>
+              <div className="log-entry-actions">
+                <button
+                  type="button"
+                  className="log-action-btn"
+                  onClick={() => setEditingLog(log)}
+                >
                   編集
                 </button>
-              </td>
-              <td>
-                <button onClick={() => handleDelete(log.id)} style={{ color: "red", cursor: "pointer" }}>
+                <button
+                  type="button"
+                  className="log-action-btn log-action-btn--delete"
+                  onClick={() => handleDelete(log.id)}
+                >
                   削除
                 </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
 
       {editingLog && (
         <LogEditModal
@@ -127,6 +127,6 @@ export function LogList({ refreshKey }: { refreshKey: number }) {
           onClose={() => setEditingLog(null)}
         />
       )}
-    </section>
+    </div>
   );
 }

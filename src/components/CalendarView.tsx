@@ -8,6 +8,7 @@ type DayLog = {
   date: string;
   durationMinutes: number | null;
   mood: number | null;
+  memo: string | null;
   tags: string[];
 };
 
@@ -31,6 +32,7 @@ export function CalendarView() {
         date: activityLogs.date,
         durationMinutes: activityLogs.durationMinutes,
         mood: activityLogs.mood,
+        memo: activityLogs.memo,
       }).from(activityLogs)
         .where(and(gte(activityLogs.date, from), lte(activityLogs.date, to))),
 

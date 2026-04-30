@@ -65,9 +65,10 @@ export function CategoryTree({ allCategories, selectedIds, onSelect }: Props) {
             <span className="cat-tree-name">
               {isSelected && "✓ "}{cat.name}
             </span>
-            {hasChildren && (
-              <span className="cat-tree-hint">ダブルクリックで展開 ›</span>
-            )}
+            <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+              {hasChildren && <span className="cat-tree-hint">›</span>}
+              <div className="cat-tree-knob" />
+            </div>
           </div>
         );
       })}
