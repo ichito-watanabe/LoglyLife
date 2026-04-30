@@ -1,6 +1,6 @@
 [package]
 name = "loglylife"
-version = "0.1.0"
+version = "0.1.1"
 description = "LoglyLife desktop app"
 authors = ["ichito0229"]
 edition = "2021"

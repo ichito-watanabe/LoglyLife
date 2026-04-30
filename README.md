@@ -33,8 +33,8 @@ src-tauri/target/release/bundle/
 For Windows, use one of these files:
 
 ```text
-src-tauri/target/release/bundle/nsis/LoglyLife_0.1.0_x64-setup.exe
-src-tauri/target/release/bundle/msi/LoglyLife_0.1.0_x64_en-US.msi
+src-tauri/target/release/bundle/nsis/LoglyLife_0.1.1_x64-setup.exe
+src-tauri/target/release/bundle/msi/LoglyLife_0.1.1_x64_en-US.msi
 ```
 
 The `.exe` installer is usually the easiest one to share.
@@ -56,11 +56,11 @@ It builds installers for:
 To create a release from GitHub, push a version tag:
 
 ```powershell
-git tag v0.1.0
-git push origin v0.1.0
+git tag v0.1.1
+git push origin v0.1.1
 ```
 
-The workflow creates a draft GitHub Release named `LoglyLife v0.1.0` and uploads the generated installers there.
+The workflow creates a draft GitHub Release named `LoglyLife v0.1.1` and uploads the generated installers there.
 
 You can also run it manually from GitHub:
 
@@ -71,7 +71,7 @@ Actions > Build desktop installers > Run workflow
 Enter the release tag, for example:
 
 ```text
-v0.1.0
+v0.1.1
 ```
 
 After the workflow finishes, open the draft release, confirm the attached files, and publish it.
