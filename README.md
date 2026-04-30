@@ -1,88 +1,136 @@
 # LoglyLife
 
-LoglyLife is a desktop app built with Tauri, React, TypeScript, Vite, and local SQLite.
+LoglyLife は、日々の行動ログやタスクを記録するためのデスクトップアプリです。
 
-## Development
+Tauri、React、TypeScript、Vite、SQLite を使って作られています。
 
-Install dependencies:
+## 開発用の起動
+
+最初に依存関係をインストールします。
 
 ```powershell
 npm install
 ```
 
-Run the app in development mode:
+開発モードで起動します。
 
 ```powershell
 npm run tauri dev
 ```
 
-## Local Windows Build
+## 自分のPCで Windows 用にビルドする
 
-Create Windows installer files:
+Windows 用のインストーラを作るには、次を実行します。
 
 ```powershell
 npm run tauri build
 ```
 
-After a successful build, the distributable files are generated under:
+成功すると、配布用ファイルは次の場所に作られます。
 
 ```text
 src-tauri/target/release/bundle/
 ```
 
-For Windows, use one of these files:
+Windows で配る場合は、主に次のどちらかを使います。
 
 ```text
 src-tauri/target/release/bundle/nsis/LoglyLife_0.1.1_x64-setup.exe
 src-tauri/target/release/bundle/msi/LoglyLife_0.1.1_x64_en-US.msi
 ```
 
-The `.exe` installer is usually the easiest one to share.
+普通に人に渡すなら、`.exe` の方が分かりやすいです。
 
-## Cross-Platform Release Build
+## Windows / macOS / Linux 用にまとめてビルドする
 
-This repository includes a GitHub Actions workflow at:
+このリポジトリには、GitHub Actions の設定があります。
 
 ```text
 .github/workflows/release.yml
 ```
 
-It builds installers for:
+この設定により、GitHub 上で次の3種類の配布ファイルを自動生成できます。
 
-- Windows
-- macOS
-- Linux
+- Windows 用
+- macOS 用
+- Linux 用
 
-To create a release from GitHub, push a version tag:
+リリース用のタグを push すると、自動でビルドが始まります。
 
 ```powershell
 git tag v0.1.1
 git push origin v0.1.1
 ```
 
-The workflow creates a draft GitHub Release named `LoglyLife v0.1.1` and uploads the generated installers there.
+ビルドが成功すると、GitHub に `LoglyLife v0.1.1` という Draft Release が作られ、そこに各OS用のファイルが添付されます。
 
-You can also run it manually from GitHub:
+## GitHub で最後にやること
+
+今の設定では、GitHub Actions が作るリリースは最初 `Draft`、つまり下書き状態です。
+
+下書き状態のままだと、自分には見えますが、他の人がダウンロードできないことがあります。
+
+公開するには、GitHub の画面で次の操作をします。
+
+1. ブラウザで次を開きます。
 
 ```text
-Actions > Build desktop installers > Run workflow
+https://github.com/ichito-watanabe/LoglyLife
 ```
 
-Enter the release tag, for example:
+2. 画面右側、またはページ内の `Releases` をクリックします。
+
+見つからない場合は、次を直接開きます。
+
+```text
+https://github.com/ichito-watanabe/LoglyLife/releases
+```
+
+3. `LoglyLife v0.1.1` というリリースを探します。
+
+4. `Draft` や `Edit` と表示されている場合は、`Edit` をクリックします。
+
+5. 添付ファイルに各OS用のファイルがあることを確認します。
+
+例:
+
+```text
+LoglyLife_0.1.1_x64-setup.exe
+LoglyLife_0.1.1_x64_en-US.msi
+```
+
+macOS や Linux 用のファイルも同じリリースに添付されます。
+
+6. 問題なければ、ページ下部の `Publish release` をクリックします。
+
+これでリリースが公開され、GitHub に来た人がアプリをダウンロードできるようになります。
+
+## GitHub Actions を手動で再実行する
+
+タグを push し直さずにビルドをやり直したい場合は、GitHub の画面から手動実行できます。
+
+1. 次を開きます。
+
+```text
+https://github.com/ichito-watanabe/LoglyLife/actions
+```
+
+2. 左側の `Build desktop installers` をクリックします。
+
+3. 右側の `Run workflow` をクリックします。
+
+4. tag に次を入力します。
 
 ```text
 v0.1.1
 ```
 
-After the workflow finishes, open the draft release, confirm the attached files, and publish it.
+5. 緑色の `Run workflow` ボタンを押します。
 
-## Distribution
+ビルドが終わったら、`Releases` ページで Draft Release を確認し、最後に `Publish release` を押します。
 
-Upload the installer files to a place where users can download them, such as:
+## 配布するときの注意
 
-- GitHub Releases
-- Google Drive
-- Dropbox
-- A personal website
+古い `tauri-app_...` という名前のファイルは配布しないでください。
 
-Do not distribute old files named `tauri-app_...`; use the `LoglyLife_...` installer files.
+配布するのは `LoglyLife_...` という名前のファイルです。
