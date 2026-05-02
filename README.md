@@ -18,7 +18,7 @@ npm install
 npm run tauri dev
 ```
 
-## 自分のPCで Windows 用にビルドする
+## 自分のPCで Windows 用にビルドする．
 
 Windows 用のインストーラを作るには、次を実行します。
 
